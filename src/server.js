@@ -87,13 +87,13 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
             clientUserId: userId,
             tabs: {
                 signHereTabs: [{
-                    anchorString: 'ROI',
+                    anchorString: '/sign_here?',
                 }]
             }
         }]
     };
     envelopeDefinition.status = 'sent';
-    envelopeDefinition.returnUrl = "https://www.facebook.com"
+    envelopeDefinition.returnUrl = ""
 
     const args = {
         accessToken: accessToken,
@@ -116,17 +116,17 @@ async function main(req, res) {
                     error: 'Problem with a file!'
                 })
             }
-            // if (file.doc.size > 3000000) {
-            //     return res.status(SC.BAD_REQUEST).json({
-            //         error: 'File size is too big!'
-            //     })
-            // } else {
+            if (file.doc.size > 3000000) {
+                return res.status(SC.BAD_REQUEST).json({
+                    error: 'File size is too big!'
+                })
+            } else {
                 let accountInfo = await authenticate();
 
-                // var oldPath = file.doc.filepath;
-                // var rawData = fs.readFileSync(oldPath, "base64")
+                const pathVal = file.doc.path
+                const doc = fs.readFileSync(pathVal, "base64")
 
-                let args = getArgs(accountInfo.apiAccountId, accountInfo.accessToken, accountInfo.basePath, fields.email.toString(), fields.userName, "", "", fields.userId, fields.doc);
+                let args = getArgs(accountInfo.apiAccountId, accountInfo.accessToken, accountInfo.basePath, fields.email.toString(), fields.userName, "", "", fields.userId, doc);
                 const dsApiClient = new docusign.ApiClient();
                 dsApiClient.setBasePath('https://demo.docusign.net/restapi');
                 dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
@@ -155,7 +155,7 @@ async function main(req, res) {
                             error: error
                         })
                     });
-            // }
+            }
         })
 
     }
