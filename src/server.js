@@ -26,9 +26,12 @@ const fs = require("fs")
 const path = require('path');
 
 const demoDocsPath = path.resolve(__dirname, '../demo_documents');
-const doc2File = 'World_Wide_Corp_Battle_Plan_Trafalgar.docx';
-const doc3File = 'World_Wide_Corp_lorem.pdf';
-
+const doc1 = "Corporation PPM SWOG Find IV.pdf"
+const doc2 = "Individual PPM SWOG Find IV.pdf"
+const doc3 = "Individual_tag.pdf"
+const doc4 = "IRA or Keough PPM SWOG Find IV.pdf"
+const doc5 = "Partnership PPM SWOG Find IV.pdf"
+const doc6 = "Trust PPM SWOG Fund IV.pdf"
 
 const SCOPES = [
     "signature", "impersonation"
@@ -71,11 +74,35 @@ async function authenticate() {
 }
 
 function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, ccEmail, ccName, userId, doc) {
+    let uploadDoc;
+    switch (doc.toString()) {
+        case "1":
+            uploadDoc = path.resolve(demoDocsPath, doc1)
+            break
+        case "2":
+            uploadDoc = path.resolve(demoDocsPath, doc2)
+            break
+        case "3":
+            uploadDoc = path.resolve(demoDocsPath, doc3)
+            break
+        case "4":
+            uploadDoc = path.resolve(demoDocsPath, doc4)
+            break
+        case "5":
+            uploadDoc = path.resolve(demoDocsPath, doc5)
+            break
+        case "6":
+            uploadDoc = path.resolve(demoDocsPath, doc6)
+            break
+        default:
+            uploadDoc = path.resolve(demoDocsPath, doc1)
+            break;
 
+    }
     const envelopeDefinition = new docusign.EnvelopeDefinition();
     envelopeDefinition.emailSubject = 'Please sign this document';
     envelopeDefinition.documents = [{
-        documentBase64: doc,
+        documentBase64: fs.readFileSync(uploadDoc, "base64"),
         name: 'My Document.pdf',
         documentId: '1'
     }];
@@ -87,7 +114,7 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
             clientUserId: userId,
             tabs: {
                 signHereTabs: [{
-                    anchorString: '/sign_here?',
+                    anchorString: '/sign_here/',
                 }]
             }
         }]
@@ -116,46 +143,46 @@ async function main(req, res) {
                     error: 'Problem with a file!'
                 })
             }
-            if (file.doc.size > 3000000) {
-                return res.status(SC.BAD_REQUEST).json({
-                    error: 'File size is too big!'
-                })
-            } else {
-                let accountInfo = await authenticate();
+            // if (file.doc.size > 3000000) {
+            //     return res.status(SC.BAD_REQUEST).json({
+            //         error: 'File size is too big!'
+            //     })
+            // } else {
+            let accountInfo = await authenticate();
 
-                const pathVal = file.doc.path
-                const doc = fs.readFileSync(pathVal, "base64")
+            // const pathVal = file.doc.path
+            // const doc = fs.readFileSync(pathVal, "base64")
 
-                let args = getArgs(accountInfo.apiAccountId, accountInfo.accessToken, accountInfo.basePath, fields.email.toString(), fields.userName, "", "", fields.userId, doc);
-                const dsApiClient = new docusign.ApiClient();
-                dsApiClient.setBasePath('https://demo.docusign.net/restapi');
-                dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
-                const envelopesApi = new docusign.EnvelopesApi(dsApiClient);
+            let args = getArgs(accountInfo.apiAccountId, accountInfo.accessToken, accountInfo.basePath, fields.email.toString(), fields.userName, "", "", fields.userId, fields.doc);
+            const dsApiClient = new docusign.ApiClient();
+            dsApiClient.setBasePath('https://demo.docusign.net/restapi');
+            dsApiClient.addDefaultHeader('Authorization', 'Bearer ' + args.accessToken);
+            const envelopesApi = new docusign.EnvelopesApi(dsApiClient);
 
-                const envelopeSummary = await envelopesApi.createEnvelope(args.accountId, { envelopeDefinition: args.envelopeArgs });
+            const envelopeSummary = await envelopesApi.createEnvelope(args.accountId, { envelopeDefinition: args.envelopeArgs });
 
-                let recipientViewRequest = new docusign.RecipientViewRequest();
-                recipientViewRequest.authenticationMethod = 'Email';
-                recipientViewRequest.email = fields.email.toString();
-                recipientViewRequest.userName = fields.userName.toString();
-                recipientViewRequest.returnUrl = fields.redirectUrl;
-                recipientViewRequest.clientUserId = fields.userId; // must be unique per recipient
+            let recipientViewRequest = new docusign.RecipientViewRequest();
+            recipientViewRequest.authenticationMethod = 'Email';
+            recipientViewRequest.email = fields.email.toString();
+            recipientViewRequest.userName = fields.userName.toString();
+            recipientViewRequest.returnUrl = fields.redirectUrl;
+            recipientViewRequest.clientUserId = fields.userId; // must be unique per recipient
 
-                envelopesApi.createRecipientView(args.accountId, envelopeSummary.envelopeId, { recipientViewRequest: recipientViewRequest })
-                    .then((result) => {
-                        res.status(200).json({
-                            status: 200,
-                            url: result.url,
-                            fields: fields
-                        })
+            envelopesApi.createRecipientView(args.accountId, envelopeSummary.envelopeId, { recipientViewRequest: recipientViewRequest })
+                .then((result) => {
+                    res.status(200).json({
+                        status: 200,
+                        url: result.url,
+                        fields: fields
                     })
-                    .catch((error) => {
-                        res.status(400).json({
-                            status: 400,
-                            error: error
-                        })
-                    });
-            }
+                })
+                .catch((error) => {
+                    res.status(400).json({
+                        status: 400,
+                        error: error
+                    })
+                });
+            // }
         })
 
     }
