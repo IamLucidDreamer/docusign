@@ -32,6 +32,7 @@ const doc3 = "Individual_twith_ag.pdf"
 const doc4 = "IRA or Keough PPM SWOG Find IV.pdf"
 const doc5 = "Partnership PPM SWOG Find IV.pdf"
 const doc6 = "Trust PPM SWOG Fund IV.pdf"
+const docNew = "Individual Subscription.pdf"
 
 const SCOPES = [
     "signature", "impersonation"
@@ -77,7 +78,7 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
     let uploadDoc;
     switch (doc.toString()) {
         case "1":
-            uploadDoc = path.resolve(demoDocsPath, doc1)
+            uploadDoc = path.resolve(demoDocsPath, docNew)
             break
         case "2":
             uploadDoc = path.resolve(demoDocsPath, doc2)
@@ -112,6 +113,17 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
             name: signerName,
             recipientId: userId,
             clientUserId: userId,
+            tabs: {
+                signHereTabs: [{
+                    anchorString: '/sign_here/',
+                }]
+            }
+        },
+        {
+            email: "manashukla21@gmail.com",
+            name: "Manas",
+            recipientId: "2345",
+            clientUserId: "5678",
             tabs: {
                 signHereTabs: [{
                     anchorString: '/sign_here/',
