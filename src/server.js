@@ -111,6 +111,8 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
         signers: [{
             email: signerEmail,
             name: signerName,
+            ccEmail: signerEmail,
+            name: signerName,
             recipientId: userId,
             clientUserId: userId,
             tabs: {
@@ -122,11 +124,13 @@ function getArgs(apiAccountId, accessToken, basePath, signerEmail, signerName, c
         {
             email: "manashukla21@gmail.com",
             name: "Manas",
+            ccEmail: "manashukla21@gmail.com",
+            ccName: "Manas",
             recipientId: "2345",
-            clientUserId: "5678",
+            // clientUserId: "2345",
             tabs: {
                 signHereTabs: [{
-                    anchorString: '/sign_here/',
+                    anchorString: '/owner_here/',
                 }]
             }
         }]
